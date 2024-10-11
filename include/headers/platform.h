@@ -24,7 +24,7 @@ public:
 
         hitbox = Hitbox(position.x, position.y, trueWidth, trueHeight);
 
-        platformImage = RLB::LoadTexture("../build/assets/lilmanplatform.png");
+        platformImage = RLB::LoadTexture("./assets/lilmanplatform.png");
     }
 
     void draw() {

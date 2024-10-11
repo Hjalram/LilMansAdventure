@@ -51,7 +51,7 @@ public:
         idle = Animation({0, 1}, 60);
         walk = Animation({2, 3, 4, 5}, 5);
 
-        spritesheet = RLB::LoadTexture("../build/assets/lilmansheet.png");
+        spritesheet = RLB::LoadTexture("./assets/lilmansheet.png");
     }
 
     void playAnimation(Animation _animation) {
