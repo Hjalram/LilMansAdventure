@@ -14,8 +14,8 @@ int main(void) {
     RLB::SetTargetFPS(TARGET_FPS);
 
     Level level = Level({
-        Platform(SCALE_FACTOR, 300, 400),
-        Platform(SCALE_FACTOR, 500, 280),
+        Platform(SCALE_FACTOR, 300, 300),
+        Platform(SCALE_FACTOR, 600, 280),
         Platform(SCALE_FACTOR, 0, 270)
     });
 

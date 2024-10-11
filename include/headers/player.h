@@ -5,6 +5,7 @@
 #include "headers/animation.h"
 #include "headers/level.h"
 #include <vector>
+#include <cmath>
 
 class Player {
 public:
@@ -24,6 +25,8 @@ public:
     Hitbox hitbox;
     Animation idle;
     Animation walk;
+    
+    const char* currentAnimationState;
     
     int currentFrameList;
     int currentFrameSheet;
@@ -48,13 +51,19 @@ public:
         frameCounter = 0;
 
         hitbox = Hitbox(position.x, position.y, trueWidth, trueHeight);
-        idle = Animation({0, 1}, 60);
-        walk = Animation({2, 3, 4, 5}, 5);
+        idle = Animation("walk", {0, 1}, 60);
+        walk = Animation("idle", {2, 3, 4, 5}, 5);
 
         spritesheet = RLB::LoadTexture("./assets/lilmansheet.png");
     }
 
     void playAnimation(Animation _animation) {
+        if (currentAnimationState != _animation.state) {
+            currentFrameList = 0;
+        }
+
+        currentAnimationState = _animation.state;
+
         // DRAW THE CURRENT FRAME
         float flipped;
         if (!xFlipped) {flipped = pixelWidth;}
@@ -80,7 +89,7 @@ public:
 
     void update(Level _level) {
         for (int i = 0; i < (int)_level.platforms.size(); i++) {
-            hitbox.collide(position, velocity, _level.platforms[i].hitbox);
+            collide(_level.platforms[i].hitbox);
         }
 
         if (RLB::IsKeyDown(RLB::KEY_RIGHT)) {
@@ -114,6 +123,15 @@ public:
         }
     }
 
+    void collide(Hitbox other) {
+        if (hitbox.position.y + hitbox.height > other.position.y && 
+            hitbox.position.x + hitbox.width > other.position.x && 
+            hitbox.position.x < other.position.x + other.width) {
+            position.y = other.position.y - hitbox.height;
+            velocity.y = 0;
+        }
+    }
+
     void draw() {
         if (velocity.x != 0) {
             playAnimation(walk);
@@ -122,6 +140,6 @@ public:
             playAnimation(idle);
         }
         
-        hitbox.draw();
+        //hitbox.draw();
     }
 };

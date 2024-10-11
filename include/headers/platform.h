@@ -32,6 +32,6 @@ public:
         RLB::Rectangle dest = (RLB::Rectangle){position.x, position.y, (float)trueWidth, (float)trueHeight};
         RLB::DrawTexturePro(platformImage, source, dest, (RLB::Vector2){0, 0}, 0, RLB::WHITE);
 
-        hitbox.draw();
+        //hitbox.draw();
     }
 };
