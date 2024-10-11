@@ -1,10 +1,9 @@
 #pragma once
 
-namespace RLB {
-    #include "raylib/raylib.h"
-}
+#include "raylib/rlb.h"
 #include "headers/hitbox.h"
 #include "headers/animation.h"
+#include "headers/level.h"
 #include <vector>
 
 class Player {
@@ -79,8 +78,10 @@ public:
         }
     }
 
-    void update(Hitbox _platform) {
-        hitbox.collide(position, velocity, _platform);
+    void update(Level _level) {
+        for (int i = 0; i < (int)_level.platforms.size(); i++) {
+            hitbox.collide(position, velocity, _level.platforms[i].hitbox);
+        }
 
         if (RLB::IsKeyDown(RLB::KEY_RIGHT)) {
             velocity.x = maxWalkSpeed;
@@ -99,7 +100,7 @@ public:
         position.x += velocity.x;
         position.y += velocity.y;
 
-        if (!xFlipped) {hitbox.position.x = position.x;} // The hitbox was a little offcenter when the player is walking to the left
+        if (!xFlipped) {hitbox.position.x = position.x;} // Correct for the fact that is hitbox sometimes is off center
         else {hitbox.position.x = position.x + scaleFactor;}
         hitbox.position.y = position.y;
         hitbox.height = trueHeight - scaleFactor*2;

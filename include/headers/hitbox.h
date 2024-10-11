@@ -1,8 +1,6 @@
 #pragma once
 
-namespace RLB {
-    #include "raylib/raylib.h"
-}
+#include "raylib/rlb.h"
 
 class Hitbox {
 public:
