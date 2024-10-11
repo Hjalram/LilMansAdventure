@@ -4,6 +4,8 @@ namespace RLB {
     #include "raylib/raylib.h"
 }
 #include "headers/hitbox.h"
+#include "headers/animation.h"
+#include <vector>
 
 class Player {
 public:
@@ -12,12 +14,21 @@ public:
     int pixelWidth, pixelHeight;
     int trueWidth, trueHeight;
     float maxWalkSpeed;
+    float jumpForce;
     float gravity;
     float scaleFactor;
+
+    bool xFlipped;
 
     RLB::Texture2D spritesheet;
 
     Hitbox hitbox;
+    Animation idle;
+    Animation walk;
+    
+    int currentFrameList;
+    int currentFrameSheet;
+    int frameCounter;
 
     Player(float _scale, float _gravity) {
         position.x = 300;
@@ -28,16 +39,49 @@ public:
         pixelHeight = 16;
         scaleFactor = _scale;
         gravity = _gravity;
-        maxWalkSpeed = 10;
+        maxWalkSpeed = 7;
+        jumpForce = -15;
         trueWidth = pixelWidth*scaleFactor;
         trueHeight = pixelHeight*scaleFactor;
+        xFlipped = false;
+
+        currentFrameList = 0;
+        frameCounter = 0;
 
         hitbox = Hitbox(position.x, position.y, trueWidth, trueHeight);
+        idle = Animation({0, 1}, 60);
+        walk = Animation({2, 3, 4, 5}, 5);
 
         spritesheet = RLB::LoadTexture("../build/assets/lilmansheet.png");
     }
 
-    void update() {
+    void playAnimation(Animation _animation) {
+        // DRAW THE CURRENT FRAME
+        float flipped;
+        if (!xFlipped) {flipped = pixelWidth;}
+        else {flipped = -pixelWidth;}
+
+        currentFrameSheet = _animation.frameIndexes[currentFrameList];
+
+        RLB::Rectangle source = (RLB::Rectangle){(float)currentFrameSheet*pixelWidth, 0, flipped, (float)pixelHeight};
+        RLB::Rectangle dest = (RLB::Rectangle){position.x, position.y, (float)trueWidth, (float)trueHeight};
+        RLB::DrawTexturePro(spritesheet, source, dest, (RLB::Vector2){scaleFactor*5, scaleFactor*2}, 0, RLB::WHITE);
+
+        // ADVANCE THE FRAME COUNTER
+        frameCounter += 1;
+
+        if (frameCounter >= _animation.frameDuration) {
+            currentFrameList += 1;
+            frameCounter = 0;
+        }
+        if (currentFrameList > (int)_animation.frameIndexes.size() - 1) {
+            currentFrameList = 0;
+        }
+    }
+
+    void update(Hitbox _platform) {
+        hitbox.collide(position, velocity, _platform);
+
         if (RLB::IsKeyDown(RLB::KEY_RIGHT)) {
             velocity.x = maxWalkSpeed;
         }
@@ -47,22 +91,36 @@ public:
         if (RLB::IsKeyUp(RLB::KEY_LEFT) && RLB::IsKeyUp(RLB::KEY_RIGHT)) {
             velocity.x = 0;
         }
+        if (RLB::IsKeyPressed(RLB::KEY_UP)) {
+            velocity.y = jumpForce;
+        }
 
         velocity.y += gravity;
         position.x += velocity.x;
         position.y += velocity.y;
 
-        hitbox.position.x = position.x;
+        if (!xFlipped) {hitbox.position.x = position.x;} // The hitbox was a little offcenter when the player is walking to the left
+        else {hitbox.position.x = position.x + scaleFactor;}
         hitbox.position.y = position.y;
-        hitbox.width = trueWidth - scaleFactor*11;
         hitbox.height = trueHeight - scaleFactor*2;
+        hitbox.width = trueWidth - scaleFactor*11;
+
+        if (velocity.x > 0) {
+            xFlipped = false;
+        }
+        if (velocity.x < 0) {
+            xFlipped = true;
+        }
     }
 
     void draw() {
-        RLB::Rectangle source = (RLB::Rectangle){0, 0, (float)pixelWidth, (float)pixelHeight};
-        RLB::Rectangle dest = (RLB::Rectangle){position.x, position.y, (float)trueWidth, (float)trueHeight};
-        RLB::DrawTexturePro(spritesheet, source, dest, (RLB::Vector2){scaleFactor*5, scaleFactor*2}, 0, RLB::WHITE);
-
+        if (velocity.x != 0) {
+            playAnimation(walk);
+        }
+        else {
+            playAnimation(idle);
+        }
+        
         hitbox.draw();
     }
 };

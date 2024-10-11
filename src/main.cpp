@@ -9,7 +9,7 @@ namespace RLB {
 #define HEIGHT 650
 #define TARGET_FPS 60
 #define SCALE_FACTOR 5
-#define GRAVITY 0.2
+#define GRAVITY 1
 
 int main(void) {
     RLB::InitWindow(WIDTH, HEIGHT, "Lil Man's Adventure");
@@ -24,7 +24,7 @@ int main(void) {
 
             platform.draw();
 
-            player.update();
+            player.update(platform.hitbox);
             player.draw();
 
         RLB::EndDrawing();

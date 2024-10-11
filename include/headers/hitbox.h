@@ -17,6 +17,13 @@ public:
     }
     Hitbox() = default;
 
+    void collide(RLB::Vector2 &_position, RLB::Vector2 &_velocity, Hitbox other) {
+        if (position.y + height > other.position.y) {
+            _position.y = other.position.y - height;
+            _velocity.y = 0;
+        }
+    }
+
     void draw() {
         RLB::DrawRectangleLines(position.x, position.y, width, height, RLB::GREEN);
     }
