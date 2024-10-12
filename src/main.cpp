@@ -17,7 +17,7 @@ int main(void) {
         Platform(SCALE_FACTOR, 300, 300),
         Platform(SCALE_FACTOR, 600, 270),
         Platform(SCALE_FACTOR, 0, 270),
-        Platform(SCALE_FACTOR, 100, 120)
+        Platform(SCALE_FACTOR, 600+48*SCALE_FACTOR, 270)
     });
 
     Player player = Player(SCALE_FACTOR, GRAVITY);
