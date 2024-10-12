@@ -19,6 +19,7 @@ public:
     float scaleFactor;
 
     bool xFlipped;
+    bool onGround;
 
     RLB::Texture2D spritesheet;
 
@@ -46,6 +47,7 @@ public:
         trueWidth = pixelWidth*scaleFactor;
         trueHeight = pixelHeight*scaleFactor;
         xFlipped = false;
+        onGround = false;
 
         currentFrameList = 0;
         frameCounter = 0;
@@ -88,10 +90,6 @@ public:
     }
 
     void update(Level _level) {
-        for (int i = 0; i < (int)_level.platforms.size(); i++) {
-            collide(_level.platforms[i].hitbox);
-        }
-
         if (RLB::IsKeyDown(RLB::KEY_RIGHT)) {
             velocity.x = maxWalkSpeed;
         }
@@ -101,17 +99,21 @@ public:
         if (RLB::IsKeyUp(RLB::KEY_LEFT) && RLB::IsKeyUp(RLB::KEY_RIGHT)) {
             velocity.x = 0;
         }
-        if (RLB::IsKeyPressed(RLB::KEY_UP)) {
+        if (RLB::IsKeyPressed(RLB::KEY_UP) && groundCheck(_level.platforms)) {
             velocity.y = jumpForce;
         }
 
-        velocity.y += gravity;
-        position.x += velocity.x;
-        position.y += velocity.y;
+        if (!groundCheck(_level.platforms)) {
+            velocity.y += gravity;
+        }
 
-        if (!xFlipped) {hitbox.position.x = position.x;} // Correct for the fact that is hitbox sometimes is off center
-        else {hitbox.position.x = position.x + scaleFactor;}
-        hitbox.position.y = position.y;
+        collide(_level.platforms);
+
+        // Updating hitbox position
+        if (!xFlipped) {position.x = hitbox.position.x;} // Correct for the fact that is hitbox sometimes is off center
+        else {position.x = hitbox.position.x - 1*scaleFactor;}        
+        position.y = hitbox.position.y;
+
         hitbox.height = trueHeight - scaleFactor*2;
         hitbox.width = trueWidth - scaleFactor*11;
 
@@ -123,13 +125,77 @@ public:
         }
     }
 
-    void collide(Hitbox other) {
-        if (hitbox.position.y + hitbox.height > other.position.y && 
+    bool groundCheck(std::vector<Platform> _platforms) {
+        for (int i = 0; i < (int)_platforms.size(); i++) {
+            Hitbox other = _platforms[i].hitbox;
+
+            if (hitbox.position.x + hitbox.width > other.position.x && // x collision
+            hitbox.position.x < other.position.x + other.width) 
+            {
+                if (hitbox.position.y == other.position.y - hitbox.height) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    void collisionCheck(const std::vector<Platform> _in, std::vector<Platform> &_out) {
+        for (int i = 0; i < (int)_in.size(); i++) {
+            Hitbox other = _in[i].hitbox;
+
+            if (hitbox.position.y + hitbox.height > other.position.y && 
+                hitbox.position.y < other.position.y + other.height &&
+                hitbox.position.x + hitbox.width > other.position.x && 
+                hitbox.position.x < other.position.x + other.width) 
+            {
+                _out.push_back(_in[i]);
+            }
+        }
+    } 
+
+    void collide(std::vector<Platform> _platforms) {
+        std::vector<Platform> collisions;
+
+        hitbox.position.x += velocity.x;
+        collisionCheck(_platforms, collisions);
+        for (int i = 0; i < (int)collisions.size(); i++) {
+            Hitbox tile = collisions[i].hitbox;
+
+            if (velocity.x > 0) { // Collision from the left
+                hitbox.position.x = tile.position.x - hitbox.width;
+                velocity.x = 0;
+            }
+            if (velocity.x < 0) { // Collision from the right
+                hitbox.position.x = tile.position.x + tile.width;
+                velocity.x = 0;
+            }
+        }
+        
+        collisions.clear();
+        hitbox.position.y += velocity.y;
+        collisionCheck(_platforms, collisions);
+        for (int i = 0; i < (int)collisions.size(); i++) {
+            Hitbox tile = collisions[i].hitbox;
+
+            if (velocity.y > 0) { // Collision from the above
+                hitbox.position.y = tile.position.y - hitbox.height;
+                velocity.y = 0;
+            }
+            if (velocity.y < 0) { // Collision from underneath
+                hitbox.position.y = tile.position.y + tile.height;
+                velocity.y = 0;
+            }
+        }
+
+
+        /*if (hitbox.position.y + hitbox.height > other.position.y && 
             hitbox.position.x + hitbox.width > other.position.x && 
             hitbox.position.x < other.position.x + other.width) {
             position.y = other.position.y - hitbox.height;
             velocity.y = 0;
-        }
+        }*/
     }
 
     void draw() {

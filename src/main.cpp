@@ -15,8 +15,9 @@ int main(void) {
 
     Level level = Level({
         Platform(SCALE_FACTOR, 300, 300),
-        Platform(SCALE_FACTOR, 600, 280),
-        Platform(SCALE_FACTOR, 0, 270)
+        Platform(SCALE_FACTOR, 600, 270),
+        Platform(SCALE_FACTOR, 0, 270),
+        Platform(SCALE_FACTOR, 100, 120)
     });
 
     Player player = Player(SCALE_FACTOR, GRAVITY);
